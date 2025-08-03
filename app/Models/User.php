@@ -1,25 +1,23 @@
 <?php
 
+// app/Models/User.php
+
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Spatie\Permission\Traits\HasRoles;
+use Spatie\Permission\Traits\HasRoles; // Importamos la trait HasRoles de Spatie
 
 class User extends Authenticatable
 {
-
-    use HasRoles;
-
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasRoles; // Usamos la trait HasRoles para manejar roles y permisos
 
     /**
-     * The attributes that are mass assignable.
+     * Los atributos que son asignables de forma masiva.
      *
-     * @var list<string>
+     * @var array
      */
     protected $fillable = [
         'name',
@@ -28,9 +26,9 @@ class User extends Authenticatable
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
+     * Los atributos que deberían ser ocultados para los arrays.
      *
-     * @var list<string>
+     * @var array
      */
     protected $hidden = [
         'password',
@@ -38,15 +36,65 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * Los atributos que deben ser convertidos a tipos nativos.
      *
-     * @return array<string, string>
+     * @var array
      */
-    protected function casts(): array
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+    ];
+
+    /**
+     * Relación con los roles a través de la tabla intermedia model_has_roles.
+     */
+    public function roles()
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->belongsToMany(Role::class, 'model_has_roles');
+    }
+
+    /**
+     * Relación con los permisos a través de la tabla intermedia model_has_permissions.
+     */
+    public function permissions()
+    {
+        return $this->belongsToMany(Permission::class, 'model_has_permissions');
+    }
+
+    /**
+     * Relación con los documentos que el usuario haya subido (si aplica).
+     */
+    public function documentos()
+    {
+        return $this->hasMany(Documento::class);
+    }
+
+    /**
+     * Relación con los registros de auditoría, si deseas hacer un seguimiento de las actividades.
+     */
+    public function logs()
+    {
+        return $this->hasMany(Log::class);
+    }
+
+    /**
+     * Función para verificar si el usuario tiene un rol específico.
+     *
+     * @param string $role
+     * @return bool
+     */
+    public function hasRole($role)
+    {
+        return $this->roles->contains('name', $role);
+    }
+
+    /**
+     * Función para verificar si el usuario tiene un permiso específico.
+     *
+     * @param string $permission
+     * @return bool
+     */
+    public function hasPermission($permission)
+    {
+        return $this->permissions->contains('name', $permission);
     }
 }
