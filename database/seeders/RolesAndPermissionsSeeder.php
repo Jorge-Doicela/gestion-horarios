@@ -5,25 +5,60 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use App\Models\User;
 
 class RolesAndPermissionsSeeder extends Seeder
 {
     public function run()
     {
-        // Crear permisos
-        $permisoGestionUsuarios = Permission::create(['name' => 'gestion usuarios']);
-        $permisoGestionHorarios = Permission::create(['name' => 'gestion horarios']);
-        $permisoGestionCarreras = Permission::create(['name' => 'gestion carreras']);
+        // Lista de permisos
+        $permissions = [
+            'gestion usuarios',
+            'gestion roles',
+            'gestion horarios',
+            'consulta horarios',
+            'gestion carreras',
+            'manage users',
+            'create schedules',
+        ];
 
-        // Crear roles
-        $admin = Role::create(['name' => 'admin']);
-        $coordinador = Role::create(['name' => 'coordinador']);
-        $tutor = Role::create(['name' => 'tutor']);
-        $estudiante = Role::create(['name' => 'estudiante']);
+        // Crear permisos sin duplicar
+        foreach ($permissions as $perm) {
+            Permission::firstOrCreate(['name' => $perm, 'guard_name' => 'web']);
+        }
 
-        // Asignar permisos a roles
-        $admin->givePermissionTo([$permisoGestionUsuarios, $permisoGestionHorarios, $permisoGestionCarreras]);
-        $coordinador->givePermissionTo([$permisoGestionHorarios, $permisoGestionCarreras]);
-        $tutor->givePermissionTo([$permisoGestionHorarios]);
+        // Roles y sus permisos
+        $rolesWithPermissions = [
+            'Administrador' => Permission::all()->pluck('name')->toArray(),
+            'Coordinador Académico' => ['gestion horarios', 'consulta horarios', 'gestion carreras'],
+            'Docente' => ['consulta horarios'],
+            'Estudiante' => [],
+            'admin' => Permission::all()->pluck('name')->toArray(),
+            'user' => ['consulta horarios'],
+        ];
+
+        // Crear roles y asignar permisos
+        foreach ($rolesWithPermissions as $roleName => $perms) {
+            $role = Role::firstOrCreate(['name' => $roleName, 'guard_name' => 'web']);
+            $role->syncPermissions($perms);
+        }
+
+        // Crear usuarios de ejemplo y asignarles roles
+        $adminUser = User::firstOrCreate(
+            ['email' => 'admin@example.com'],
+            ['name' => 'Admin User', 'password' => bcrypt('password')]
+        );
+        $adminUser->assignRole('Administrador');
+
+        $regularUser = User::firstOrCreate(
+            ['email' => 'user@example.com'],
+            ['name' => 'Regular User', 'password' => bcrypt('password')]
+        );
+        $regularUser->assignRole('user');
+
+        $testUser = User::firstOrCreate(
+            ['email' => 'test@example.com'],
+            ['name' => 'Test User', 'password' => bcrypt('password')]
+        );
     }
 }

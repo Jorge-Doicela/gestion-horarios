@@ -10,14 +10,14 @@ class CreateHorariosTable extends Migration
     public function up()
     {
         Schema::create('horarios', function (Blueprint $table) {
-            $table->id()->unsigned();
-            $table->foreignId('paralelo_id')->constrained()->onDelete('cascade');
-            $table->foreignId('materia_id')->constrained()->onDelete('cascade');
-            $table->foreignId('docente_id')->constrained()->onDelete('cascade');
-            $table->foreignId('espacio_id')->constrained()->onDelete('cascade');
-            $table->foreignId('dia_id')->constrained()->onDelete('cascade');
-            $table->foreignId('hora_id')->constrained()->onDelete('cascade');
-            $table->foreignId('periodo_academico_id')->constrained()->onDelete('cascade');
+            $table->id(); // No es necesario ->unsigned()
+            $table->foreignId('paralelo_id')->constrained('paralelos')->onDelete('cascade');
+            $table->foreignId('materia_id')->constrained('materias')->onDelete('cascade');
+            $table->foreignId('docente_id')->constrained('docentes')->onDelete('cascade');
+            $table->foreignId('espacio_id')->constrained('espacios')->onDelete('cascade');
+            $table->foreignId('dia_id')->constrained('dias')->onDelete('cascade');
+            $table->foreignId('hora_id')->constrained('horas')->onDelete('cascade');
+            $table->foreignId('periodo_academico_id')->constrained('periodos_academicos')->onDelete('cascade');
             $table->date('fecha_inicio');
             $table->date('fecha_fin');
             $table->enum('estado', ['activo', 'suspendido', 'finalizado'])->default('activo');

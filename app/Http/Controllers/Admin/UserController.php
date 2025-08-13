@@ -5,77 +5,88 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
-    // Constructor para asegurar que solo el admin pueda acceder
-    public function __construct()
-    {
-        $this->middleware('role:admin'); // Usando Spatie para el middleware de roles
-    }
-
-    // Mostrar todos los usuarios
     public function index()
     {
-        $users = User::all();
+        $users = User::with('roles')->paginate(10);
         return view('admin.users.index', compact('users'));
     }
 
-    // Mostrar el formulario para crear un nuevo usuario
     public function create()
     {
-        return view('admin.users.create');
+        $roles = Role::all();
+        return view('admin.users.create', compact('roles'));
     }
 
-    // Guardar un nuevo usuario
     public function store(Request $request)
     {
-        $request->validate([
+        $data = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
+            'roles' => 'required|array',
+            'roles.*' => 'exists:roles,name',
         ]);
 
-        User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => $request->role ?? 'user', // Asignación de rol por defecto
+        $user = User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']),
         ]);
 
-        return redirect()->route('admin.users.index')->with('success', 'Usuario creado exitosamente');
+        $user->syncRoles($data['roles']);
+
+        return redirect()->route('admin.users.index')->with('success', 'Usuario creado correctamente.');
     }
 
-    // Mostrar el formulario para editar un usuario
+    public function show(User $user)
+    {
+        return redirect()->route('admin.users.edit', $user);
+    }
+
     public function edit(User $user)
     {
-        return view('admin.users.edit', compact('user'));
+        $roles = Role::all();
+        $userRoles = $user->roles->pluck('name')->toArray();
+        return view('admin.users.edit', compact('user', 'roles', 'userRoles'));
     }
 
-    // Actualizar un usuario
     public function update(Request $request, User $user)
     {
-        $request->validate([
+        $data = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
+            'email' => ['required', 'email', Rule::unique('users')->ignore($user->id)],
             'password' => 'nullable|string|min:8|confirmed',
+            'roles' => 'required|array',
+            'roles.*' => 'exists:roles,name',
         ]);
 
-        $user->update([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => $request->password ? Hash::make($request->password) : $user->password,
-            'role' => $request->role ?? $user->role, // Mantener el rol si no se actualiza
-        ]);
+        $user->name = $data['name'];
+        $user->email = $data['email'];
 
-        return redirect()->route('admin.users.index')->with('success', 'Usuario actualizado exitosamente');
+        if (!empty($data['password'])) {
+            $user->password = Hash::make($data['password']);
+        }
+
+        $user->save();
+        $user->syncRoles($data['roles']);
+
+        return redirect()->route('admin.users.index')->with('success', 'Usuario actualizado correctamente.');
     }
 
-    // Eliminar un usuario
     public function destroy(User $user)
     {
+        // Evitar que un admin se elimine a sí mismo
+        if (auth()->id() == $user->id) {
+            return redirect()->route('admin.users.index')->with('error', 'No puedes eliminar tu propio usuario.');
+        }
+
         $user->delete();
-        return redirect()->route('admin.users.index')->with('success', 'Usuario eliminado exitosamente');
+        return redirect()->route('admin.users.index')->with('success', 'Usuario eliminado correctamente.');
     }
 }
