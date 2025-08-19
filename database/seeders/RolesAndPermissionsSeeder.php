@@ -11,15 +11,14 @@ class RolesAndPermissionsSeeder extends Seeder
 {
     public function run()
     {
-        // Lista de permisos
+        // Lista de permisos en español (uniforme)
         $permissions = [
-            'gestion usuarios',
-            'gestion roles',
-            'gestion horarios',
-            'consulta horarios',
-            'gestion carreras',
-            'manage users',
-            'create schedules',
+            'gestionar usuarios',
+            'gestionar roles',
+            'gestionar horarios',
+            'consultar horarios',
+            'gestionar carreras',
+            'crear horarios',
         ];
 
         // Crear permisos sin duplicar
@@ -27,14 +26,12 @@ class RolesAndPermissionsSeeder extends Seeder
             Permission::firstOrCreate(['name' => $perm, 'guard_name' => 'web']);
         }
 
-        // Roles y sus permisos
+        // Roles oficiales y sus permisos asignados
         $rolesWithPermissions = [
             'Administrador' => Permission::all()->pluck('name')->toArray(),
-            'Coordinador Académico' => ['gestion horarios', 'consulta horarios', 'gestion carreras'],
-            'Docente' => ['consulta horarios'],
+            'Coordinador Académico' => ['gestionar horarios', 'consultar horarios', 'gestionar carreras'],
+            'Docente' => ['consultar horarios'],
             'Estudiante' => [],
-            'admin' => Permission::all()->pluck('name')->toArray(),
-            'user' => ['consulta horarios'],
         ];
 
         // Crear roles y asignar permisos
@@ -43,22 +40,29 @@ class RolesAndPermissionsSeeder extends Seeder
             $role->syncPermissions($perms);
         }
 
-        // Crear usuarios de ejemplo y asignarles roles
+        // Crear usuarios de ejemplo con roles oficiales
         $adminUser = User::firstOrCreate(
             ['email' => 'admin@example.com'],
             ['name' => 'Admin User', 'password' => bcrypt('password')]
         );
         $adminUser->assignRole('Administrador');
 
-        $regularUser = User::firstOrCreate(
-            ['email' => 'user@example.com'],
-            ['name' => 'Regular User', 'password' => bcrypt('password')]
+        $coordinadorUser = User::firstOrCreate(
+            ['email' => 'coordinador@example.com'],
+            ['name' => 'Coordinador User', 'password' => bcrypt('password')]
         );
-        $regularUser->assignRole('user');
+        $coordinadorUser->assignRole('Coordinador Académico');
 
-        $testUser = User::firstOrCreate(
-            ['email' => 'test@example.com'],
-            ['name' => 'Test User', 'password' => bcrypt('password')]
+        $docenteUser = User::firstOrCreate(
+            ['email' => 'docente@example.com'],
+            ['name' => 'Docente User', 'password' => bcrypt('password')]
         );
+        $docenteUser->assignRole('Docente');
+
+        $estudianteUser = User::firstOrCreate(
+            ['email' => 'estudiante@example.com'],
+            ['name' => 'Estudiante User', 'password' => bcrypt('password')]
+        );
+        $estudianteUser->assignRole('Estudiante');
     }
 }

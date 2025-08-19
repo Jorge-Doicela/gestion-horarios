@@ -1,16 +1,20 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Spatie\Permission\Models\Role;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
+    public function __construct()
+    {
+        // Solo administradores pueden gestionar usuarios
+        $this->middleware(['role:Administrador']);
+    }
+
     public function index()
     {
         $users = User::with('roles')->paginate(10);
@@ -25,68 +29,77 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
+        $validated = $request->validate([
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
-            'roles' => 'required|array',
-            'roles.*' => 'exists:roles,name',
+            'role'     => 'required|exists:roles,name',
         ]);
 
         $user = User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
+            'name'     => $validated['name'],
+            'email'    => $validated['email'],
+            'password' => bcrypt($validated['password']),
         ]);
 
-        $user->syncRoles($data['roles']);
+        $user->assignRole($validated['role']);
 
-        return redirect()->route('admin.users.index')->with('success', 'Usuario creado correctamente.');
-    }
-
-    public function show(User $user)
-    {
-        return redirect()->route('admin.users.edit', $user);
+        return redirect()->route('users.index')->with('success', 'Usuario creado correctamente.');
     }
 
     public function edit(User $user)
     {
+        // 🔒 Evitar editar al Administrador General (ejemplo: id=1)
+        if ($user->id === 1) {
+            return redirect()->route('users.index')->with('error', 'No se puede editar al Administrador General.');
+        }
+
         $roles = Role::all();
-        $userRoles = $user->roles->pluck('name')->toArray();
-        return view('admin.users.edit', compact('user', 'roles', 'userRoles'));
+        return view('admin.users.edit', compact('user', 'roles'));
     }
 
     public function update(Request $request, User $user)
     {
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => ['required', 'email', Rule::unique('users')->ignore($user->id)],
-            'password' => 'nullable|string|min:8|confirmed',
-            'roles' => 'required|array',
-            'roles.*' => 'exists:roles,name',
-        ]);
-
-        $user->name = $data['name'];
-        $user->email = $data['email'];
-
-        if (!empty($data['password'])) {
-            $user->password = Hash::make($data['password']);
+        // 🔒 Evitar editar al Administrador General
+        if ($user->id === 1) {
+            return redirect()->route('users.index')->with('error', 'No se puede modificar al Administrador General.');
         }
 
-        $user->save();
-        $user->syncRoles($data['roles']);
+        $validated = $request->validate([
+            'name'  => 'required|string|max:255',
+            'email' => ['required', 'email', Rule::unique('users')->ignore($user->id)],
+            'role'  => 'required|exists:roles,name',
+        ]);
 
-        return redirect()->route('admin.users.index')->with('success', 'Usuario actualizado correctamente.');
+        $user->update([
+            'name'  => $validated['name'],
+            'email' => $validated['email'],
+        ]);
+
+        // 🔒 Evitar que un usuario se quite su propio rol de Administrador
+        if ($user->id === auth()->id() && $user->hasRole('Administrador')) {
+            return redirect()->route('users.index')->with('error', 'No puedes cambiar tu propio rol de Administrador.');
+        }
+
+        $user->syncRoles([$validated['role']]);
+
+        return redirect()->route('users.index')->with('success', 'Usuario actualizado correctamente.');
     }
 
     public function destroy(User $user)
     {
-        // Evitar que un admin se elimine a sí mismo
-        if (auth()->id() == $user->id) {
-            return redirect()->route('admin.users.index')->with('error', 'No puedes eliminar tu propio usuario.');
+        // 🔒 Evitar borrar al Administrador General
+        if ($user->id === 1) {
+            return redirect()->route('users.index')->with('error', 'No se puede eliminar al Administrador General.');
+        }
+
+        // 🔒 Evitar auto-eliminarse
+        if ($user->id === auth()->id()) {
+            return redirect()->route('users.index')->with('error', 'No puedes eliminar tu propia cuenta.');
         }
 
         $user->delete();
-        return redirect()->route('admin.users.index')->with('success', 'Usuario eliminado correctamente.');
+
+        return redirect()->route('users.index')->with('success', 'Usuario eliminado correctamente.');
     }
 }
