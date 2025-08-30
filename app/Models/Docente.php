@@ -1,6 +1,6 @@
 <?php
-
 // app/Models/Docente.php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -17,6 +17,13 @@ class Docente extends Model
         'especialidad',
     ];
 
+    // Relación con materias
+    public function materias()
+    {
+        return $this->belongsToMany(Materia::class, 'docente_materia');
+    }
+
+    // Relación con horarios
     public function horarios()
     {
         return $this->hasMany(Horario::class);

@@ -10,21 +10,30 @@ class PermissionController extends Controller
 {
     public function __construct()
     {
-        // Protegemos todas las rutas con permiso 'gestion roles' (puedes crear otro permiso si quieres)
-        $this->middleware('permission:gestion roles');
+        // Todas las rutas protegidas solo para usuarios con rol 'Administrador'
+        $this->middleware(['auth', 'role:Administrador']);
     }
 
+    /**
+     * Listar permisos
+     */
     public function index()
     {
         $permissions = Permission::paginate(10);
         return view('admin.permissions.index', compact('permissions'));
     }
 
+    /**
+     * Mostrar formulario de creación
+     */
     public function create()
     {
         return view('admin.permissions.create');
     }
 
+    /**
+     * Guardar un nuevo permiso
+     */
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -36,28 +45,39 @@ class PermissionController extends Controller
         return redirect()->route('admin.permissions.index')->with('success', 'Permiso creado correctamente.');
     }
 
+    /**
+     * Redirigir show a edit
+     */
     public function show(Permission $permission)
     {
         return redirect()->route('admin.permissions.edit', $permission);
     }
 
+    /**
+     * Formulario de edición
+     */
     public function edit(Permission $permission)
     {
         return view('admin.permissions.edit', compact('permission'));
     }
 
+    /**
+     * Actualizar permiso
+     */
     public function update(Request $request, Permission $permission)
     {
         $data = $request->validate([
             'name' => 'required|string|unique:permissions,name,' . $permission->id,
         ]);
 
-        $permission->name = $data['name'];
-        $permission->save();
+        $permission->update(['name' => $data['name']]);
 
         return redirect()->route('admin.permissions.index')->with('success', 'Permiso actualizado correctamente.');
     }
 
+    /**
+     * Eliminar permiso
+     */
     public function destroy(Permission $permission)
     {
         $permission->delete();

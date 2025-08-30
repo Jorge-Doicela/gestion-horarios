@@ -1,6 +1,5 @@
 <?php
 
-// app/Models/Espacio.php
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -10,7 +9,20 @@ class Espacio extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['nombre', 'tipo', 'ubicacion', 'disponible'];
+    protected $fillable = [
+        'nombre',
+        'tipo',
+        'ubicacion',
+        'disponible',
+        'modalidad',
+        'capacidad',
+        'equipamiento',
+    ];
+
+    protected $casts = [
+        'disponible' => 'boolean',
+        'equipamiento' => 'array',
+    ];
 
     public function horarios()
     {

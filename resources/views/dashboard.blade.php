@@ -10,23 +10,71 @@
                     <h2 class="text-xl font-semibold mb-4">Dashboard</h2>
                     <p>{{ __("You're logged in!") }}</p>
 
-                    {{-- Botón para ir a la gestión de usuarios (solo para Administrador) --}}
+                    {{-- Botones de gestión para Administrador --}}
                     @role('Administrador')
-                        <div class="mt-4 space-x-4">
+                        <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-10 gap-4">
+                            {{-- Usuarios --}}
                             <a href="{{ route('admin.users.index') }}"
-                                class="inline-block px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                                class="block px-4 py-3 bg-blue-600 text-white rounded shadow hover:bg-blue-700 text-center font-medium">
                                 Gestionar Usuarios
                             </a>
+
+                            {{-- Roles --}}
                             <a href="{{ route('admin.roles.index') }}"
-                                class="inline-block px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+                                class="block px-4 py-3 bg-green-600 text-white rounded shadow hover:bg-green-700 text-center font-medium">
                                 Gestionar Roles
                             </a>
+
+                            {{-- Permisos --}}
                             <a href="{{ route('admin.permissions.index') }}"
-                                class="inline-block px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700">
+                                class="block px-4 py-3 bg-yellow-600 text-white rounded shadow hover:bg-yellow-700 text-center font-medium">
                                 Gestionar Permisos
+                            </a>
+
+                            {{-- Carreras --}}
+                            <a href="{{ route('carreras.index') }}"
+                                class="block px-4 py-3 bg-purple-600 text-white rounded shadow hover:bg-purple-700 text-center font-medium">
+                                Gestionar Carreras
+                            </a>
+
+                            {{-- Niveles --}}
+                            <a href="{{ route('niveles.index') }}"
+                                class="block px-4 py-3 bg-pink-600 text-white rounded shadow hover:bg-pink-700 text-center font-medium">
+                                Gestionar Niveles
+                            </a>
+
+                            {{-- Materias --}}
+                            <a href="{{ route('materias.index') }}"
+                                class="block px-4 py-3 bg-indigo-600 text-white rounded shadow hover:bg-indigo-700 text-center font-medium">
+                                Gestionar Materias
+                            </a>
+
+                            {{-- Paralelos --}}
+                            <a href="{{ route('paralelos.index') }}"
+                                class="block px-4 py-3 bg-teal-600 text-white rounded shadow hover:bg-teal-700 text-center font-medium">
+                                Gestionar Paralelos
+                            </a>
+
+                            {{-- Docentes --}}
+                            <a href="{{ route('docentes.index') }}"
+                                class="block px-4 py-3 bg-orange-600 text-white rounded shadow hover:bg-orange-700 text-center font-medium">
+                                Gestionar Docentes
+                            </a>
+
+                            {{-- Espacios --}}
+                            <a href="{{ route('espacios.index') }}"
+                                class="block px-4 py-3 bg-gray-600 text-white rounded shadow hover:bg-gray-700 text-center font-medium">
+                                Gestionar Espacios
+                            </a>
+
+                            {{-- Periodos Académicos --}}
+                            <a href="{{ route('periodos.index') }}"
+                                class="block px-4 py-3 bg-red-600 text-white rounded shadow hover:bg-red-700 text-center font-medium">
+                                Gestionar Periodos
                             </a>
                         </div>
                     @endrole
+
                 </div>
             </div>
         </div>

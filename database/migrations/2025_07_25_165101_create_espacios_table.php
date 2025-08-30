@@ -1,11 +1,10 @@
 <?php
 
-// database/migrations/xxxx_xx_xx_create_espacios_table.php
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateEspaciosTable extends Migration
+return new class extends Migration
 {
     public function up()
     {
@@ -15,6 +14,9 @@ class CreateEspaciosTable extends Migration
             $table->enum('tipo', ['aula', 'laboratorio', 'cancha', 'aula interactiva', 'otro'])->default('aula');
             $table->string('ubicacion', 255)->nullable();
             $table->boolean('disponible')->default(true);
+            $table->enum('modalidad', ['presencial', 'virtual', 'hibrida'])->default('presencial');
+            $table->integer('capacidad')->default(0);
+            $table->json('equipamiento')->nullable();
             $table->timestamps();
         });
     }
@@ -23,4 +25,4 @@ class CreateEspaciosTable extends Migration
     {
         Schema::dropIfExists('espacios');
     }
-}
+};
