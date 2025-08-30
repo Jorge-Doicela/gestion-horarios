@@ -10,7 +10,8 @@ use App\Http\Controllers\MateriaController;
 use App\Http\Controllers\ParaleloController;
 use App\Http\Controllers\DocenteController;
 use App\Http\Controllers\EspacioController;
-use App\Http\Controllers\PeriodoAcademicoController; // <- añadido
+use App\Http\Controllers\PeriodoAcademicoController;
+use App\Http\Controllers\HorarioController; // <- añadido
 use Illuminate\Support\Facades\Route;
 
 // Ruta pública inicial
@@ -30,7 +31,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// Rutas para administración (Usuarios, Roles, Permisos)
+// Rutas de administración (Usuarios, Roles, Permisos) solo para Administrador
 Route::middleware(['auth', 'role:Administrador'])
     ->prefix('admin')
     ->name('admin.')
@@ -40,7 +41,7 @@ Route::middleware(['auth', 'role:Administrador'])
         Route::resource('permissions', PermissionController::class);
     });
 
-// Rutas de carreras y niveles (fuera del prefijo admin, pero con rol 'Administrador')
+// Rutas de carreras y niveles (Administrador)
 Route::middleware(['auth', 'role:Administrador'])->group(function () {
     Route::resource('carreras', CarreraController::class);
 
@@ -50,13 +51,16 @@ Route::middleware(['auth', 'role:Administrador'])->group(function () {
     ]);
 });
 
-// Rutas de materias, paralelos, docentes y espacios (solo usuarios autenticados)
+// Rutas para materias, paralelos, docentes, espacios y periodos académicos (usuarios autenticados)
 Route::middleware(['auth'])->group(function () {
     Route::resource('materias', MateriaController::class);
     Route::resource('paralelos', ParaleloController::class);
     Route::resource('docentes', DocenteController::class);
     Route::resource('espacios', EspacioController::class);
-    Route::resource('periodos', PeriodoAcademicoController::class); // <- añadido
+    Route::resource('periodos', PeriodoAcademicoController::class);
+
+    // Rutas para horarios
+    Route::resource('horarios', HorarioController::class);
 });
 
 // Rutas de autenticación (Laravel Breeze)

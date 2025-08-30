@@ -1,6 +1,5 @@
 <?php
 
-// app/Models/Horario.php
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -22,41 +21,36 @@ class Horario extends Model
         'fecha_fin',
         'estado',
         'modalidad',
-        'observaciones'
+        'observaciones',
     ];
 
+    // Relaciones
     public function paralelo()
     {
         return $this->belongsTo(Paralelo::class);
     }
-
     public function materia()
     {
         return $this->belongsTo(Materia::class);
     }
-
     public function docente()
     {
         return $this->belongsTo(Docente::class);
     }
-
     public function espacio()
     {
         return $this->belongsTo(Espacio::class);
     }
-
     public function dia()
     {
         return $this->belongsTo(Dia::class);
     }
-
     public function hora()
     {
         return $this->belongsTo(Hora::class);
     }
-
-    public function periodoAcademico()
+    public function periodo()
     {
-        return $this->belongsTo(PeriodoAcademico::class);
+        return $this->belongsTo(PeriodoAcademico::class, 'periodo_academico_id');
     }
 }

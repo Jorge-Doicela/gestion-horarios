@@ -13,6 +13,7 @@
                     {{-- Botones de gestión para Administrador --}}
                     @role('Administrador')
                         <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-10 gap-4">
+
                             {{-- Usuarios --}}
                             <a href="{{ route('admin.users.index') }}"
                                 class="block px-4 py-3 bg-blue-600 text-white rounded shadow hover:bg-blue-700 text-center font-medium">
@@ -72,6 +73,13 @@
                                 class="block px-4 py-3 bg-red-600 text-white rounded shadow hover:bg-red-700 text-center font-medium">
                                 Gestionar Periodos
                             </a>
+
+                            {{-- Horarios --}}
+                            <a href="{{ route('horarios.index') }}"
+                                class="block px-4 py-3 bg-cyan-600 text-white rounded shadow hover:bg-cyan-700 text-center font-medium">
+                                Gestionar Horarios
+                            </a>
+
                         </div>
                     @endrole
 
